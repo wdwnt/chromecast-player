@@ -1,0 +1,69 @@
+<html>
+  <head>
+    <title>Chromecast Web</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+    <link rel="stylesheet" href='/static/styles.css' />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+<body>
+  <div class="container">
+    <h1>WDWNTunes Chromecast Player</h1>
+    <form>
+      <div class="form-group">
+        <label for="device-select">Select a device</label>
+        <select class="form-control" id="device-select">
+        </select>
+      </div>
+    </form>
+    <button type="button" id="play-button" class="btn btn-primary" disabled>Play</button>
+    <button type="button" id="stop-button" class="btn btn-link" disabled>Stop</button>
+    <div id="spinner" class="spinner-border text-primary" role="status">
+      <span class="sr-only">Please wait...</span>
+    </div>
+  </div>
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      $("#play-button").click(function() {
+        $("#spinner").show();
+        let selectedOption = $("select#device-select").val();
+
+        $.ajax({
+          url: "/play",
+          headers: {
+            "Content-type": "application/json"
+          },
+          method: "POST",
+          data: JSON.stringify({ device: selectedOption }),
+          success: function(result) {
+            $("#spinner").hide();
+          }
+        });
+      });
+
+      $("#stop-button").click(function() {
+        $.get("/stop");
+      });
+
+      var listItems = '';
+
+      $.get("/devices", function(data) {
+        $.each(data, function(key, value) {
+          listItems += '<option value="' + value.name + '">' + value.name + '</option>';
+        });
+
+        $("#device-select").append(listItems);
+
+        $("#play-button").prop('disabled', false);
+        $("#stop-button").prop('disabled', false);
+
+        $("#spinner").hide();
+      });
+    });
+  </script>
+</body>
+</html>
